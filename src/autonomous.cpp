@@ -1,4 +1,6 @@
 #include "autonomous.hpp"
+#include "globals.hpp"
+#include "pid.hpp"
 
 CyclicIterator page = CyclicIterator(0, 4);
 
@@ -7,16 +9,16 @@ void select() {
 
     switch (*page) {
         case 0:
-            pros::lcd::print(1, "Left AWP");
+            pros::lcd::set_text(1, "Left AWP");
             break;
         case 1:
-            pros::lcd::print(1, "Right AWP");
+            pros::lcd::set_text(1, "Right AWP");
             break;
         case 2:
-            pros::lcd::print(1, "Skills");
+            pros::lcd::set_text(1, "Skills");
             break;
         case 3:
-            pros::lcd::print(1, "No Auton");
+            pros::lcd::set_text(1, "No Auton");
             break;
     }
 }

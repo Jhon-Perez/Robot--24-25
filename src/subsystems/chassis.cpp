@@ -1,4 +1,6 @@
 #include "chassis.hpp"
+#include "globals.hpp"
+#include "cyclic_iterator.hpp"
 
 const double ANALOG_TO_VOLTAGE = 12000.0 / 127.0;
 const PolynomialDegree speed = LINEAR;
@@ -17,7 +19,11 @@ void incrementJoystick() {
     pros::lcd::print(2, "Joystick: %s", joystickNames[*joystickIterator]);
 }
 
-double polynomial(double power, int exponent) {
+double getAcceleration(double power, int exponent) {
+    if (exponent == 1) {
+        return power;
+    }
+
     return pow(power, exponent - 1) / pow(127, exponent - 1) * ((exponent % 2 == 0) ? abs(power) : power);
 }
 
@@ -33,32 +39,32 @@ void drive() {
     double power = 0;
     double turn = 0;
 
+    pros::lcd::print(2, "Joystick: %s", joystickNames[joystickType]);
     switch (joystickType) {
         case JoystickType::ArcadeLeft:
             power = master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
             turn = master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_X);
-            pros::lcd::set_text(2, "Arcade Left");
             break;
+
         case JoystickType::ArcadeRight:
             power = master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y);
             turn = master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
-            pros::lcd::set_text(2, "Arcade Right");
             break;
+
         case JoystickType::SplitArcade:
             power = master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
             turn = master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
-            pros::lcd::set_text(2, "Split Arcade");
             break;
+
         case JoystickType::Tank:
             left = master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
             right = master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y);
-            pros::lcd::set_text(2, "Tank Drive");
             break;
     }
     
     if (joystickType != JoystickType::Tank) {
-        left = polynomial(power + turn, speed);
-        right = polynomial(power - turn, speed);
+        left = getAcceleration(power + turn, speed);
+        right = getAcceleration(power - turn, speed);
     }
     
     leftDriveTrain.move_voltage(left * ANALOG_TO_VOLTAGE);

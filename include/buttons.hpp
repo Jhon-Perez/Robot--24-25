@@ -1,16 +1,16 @@
 #pragma once
 #include "main.h"
 
-using instruction = void (*)();
+using lcd_btn = pros::lcd::lcd_btn_cb_fn_t;
 
 class Button {
 private:
-    instruction left;
-    instruction middle;
-    instruction right;
+    lcd_btn left;
+    lcd_btn middle;
+    lcd_btn right;
 
 public:
-    Button(instruction left, instruction middle) : left(left), middle(middle), right(right) {}
+    Button(lcd_btn left, lcd_btn middle) : left(left), middle(middle), right(right) {}
     void update();
     
 };

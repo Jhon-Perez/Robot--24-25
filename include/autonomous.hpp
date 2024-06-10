@@ -1,6 +1,5 @@
 #pragma once
-#include "main.h"
-#include "CyclicIterator.hpp"
+#include "cyclic_iterator.hpp"
 
 extern CyclicIterator page;
 void pageUp();
