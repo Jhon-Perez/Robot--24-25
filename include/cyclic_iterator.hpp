@@ -7,10 +7,6 @@
  * The iterator wraps around to the beginning when it reaches the end of the range.
  */
 class CyclicIterator {
-private:
-    int value; /**< The current value of the iterator. */
-    int max; /**< The maximum value of the iterator range. */
-
 public:
     /**
      * Constructs a CyclicIterator object.
@@ -40,4 +36,8 @@ public:
      * @return The current value of the iterator.
      */
     int operator*() const;
+
+private:
+    int value; /**< The current value of the iterator. */
+    int max; /**< The maximum value of the iterator range. */    
 };

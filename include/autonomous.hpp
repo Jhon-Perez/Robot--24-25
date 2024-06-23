@@ -1,7 +1,8 @@
 #pragma once
 #include "cyclic_iterator.hpp"
 
-extern CyclicIterator page;
+void select();
+void runAutonomous();
 void pageUp();
 void pageDown();
 

@@ -5,22 +5,41 @@
 CyclicIterator page = CyclicIterator(0, 4);
 
 void select() {
-    pros::lcd::print(0, "Page: %d", *page + 1);
+    pros::screen::print(pros::E_TEXT_MEDIUM, 171, 78, "page: %d", *page);
 
     switch (*page) {
         case 0:
-            pros::lcd::set_text(1, "Left AWP");
+            pros::screen::print(pros::E_TEXT_MEDIUM, 172, 130, "Left AWP");
             break;
         case 1:
-            pros::lcd::set_text(1, "Right AWP");
+            pros::screen::print(pros::E_TEXT_MEDIUM, 172, 130, "Right AWP");
             break;
         case 2:
-            pros::lcd::set_text(1, "Skills");
+            pros::screen::print(pros::E_TEXT_MEDIUM, 172, 130, "Skills");
             break;
         case 3:
-            pros::lcd::set_text(1, "No Auton");
+            pros::screen::print(pros::E_TEXT_MEDIUM, 172, 130, "Back");
             break;
     }
+}
+
+void runAutonomous() {
+    switch (*page) {
+		case 0:
+			leftAWP();
+			break;
+
+		case 1:
+			rightAWP();
+			break;
+
+		case 2:
+			skills();
+			break;
+
+		default:
+			break;
+	}
 }
 
 void pageUp() {

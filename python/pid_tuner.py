@@ -1,4 +1,4 @@
-# Credit to Veera Sai Joshik Unnam for the original idea
+# Credit to Veera Sai Joshik Unnam (719S) for the original idea
 # of tuning the PID controller for the robot using a CSV file
 
 import os

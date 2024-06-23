@@ -19,6 +19,11 @@ void incrementJoystick() {
     pros::lcd::print(2, "Joystick: %s", joystickNames[*joystickIterator]);
 }
 
+void decrementJoystick() {
+    --joystickIterator;
+    pros::lcd::print(2, "Joystick: %s", joystickNames[*joystickIterator]);
+}
+
 double getAcceleration(double power, int exponent) {
     if (exponent == 1) {
         return power;
@@ -39,7 +44,6 @@ void drive() {
     double power = 0;
     double turn = 0;
 
-    pros::lcd::print(2, "Joystick: %s", joystickNames[joystickType]);
     switch (joystickType) {
         case JoystickType::ArcadeLeft:
             power = master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);

@@ -1,24 +1,8 @@
 #include "main.h"
-#include "globals.hpp"
 #include "autonomous.hpp"
 #include "subsystems/chassis.hpp"
 #include "subsystems/intake.hpp"
-
-/**
- * A callback function for LLEMU's center button.
- *
- * When this callback is fired, it will toggle line 2 of the LCD text between
- * "I was pressed!" and nothing.
- */
-void on_center_button() {
-	static bool pressed = false;
-	pressed = !pressed;
-	if (pressed) {
-		pros::lcd::set_text(2, "I was pressed!");
-	} else {
-		pros::lcd::clear_line(2);
-	}
-}
+#include "screen/screen.hpp"
 
 /**
  * Runs initialization code. This occurs as soon as the program is started.
@@ -26,17 +10,7 @@ void on_center_button() {
  * All other competition modes are blocked by initialize; it is recommended
  * to keep execution time for this mode under a few seconds.
  */
-void initialize() {
-	pros::lcd::initialize();
-
-	if (imuSensor.reset(true) != PROS_ERR) {
-		pros::lcd::set_text(1, "IMU calibrated!");
-	} else {
-		pros::lcd::set_text(1, "IMU failed to calibrate!");
-	}
-
-
-}
+void initialize() {}
 
 /**
  * Runs while the robot is in the disabled state of Field Management System or
@@ -68,22 +42,7 @@ void competition_initialize() {}
  * from where it left off.
  */
 void autonomous() {
-	switch (*page) {
-		case 0:
-			leftAWP();
-			break;
-
-		case 1:
-			rightAWP();
-			break;
-
-		case 2:
-			skills();
-			break;
-
-		default:
-			break;
-	}
+	runAutonomous();
 }
 
 /**
@@ -100,9 +59,14 @@ void autonomous() {
  * task, not resume it from where it left off.
  */
 void opcontrol() {
+	pros::screen_touch_status_s_t status;
+	pros::screen::set_eraser(pros::Color::black);
+
+	displayScreen();
 	while (true) {
-		drive();
-		intake();
+		// drive();
+		// intake();
+		interactScreen();
 		
 		pros::delay(20);
 	}

@@ -1,7 +1,6 @@
 #include "main.h"
 #include "pid.hpp"
 #include "globals.hpp"
-#include <fstream>
 
 #define MOTOR_INDEX 1
 
@@ -30,24 +29,36 @@ double normalizeAngle(double angle) {
     return angle;
 }
 
-PID::PID(double kP, double kI, double kD, int integralThreshold) {
-    this->kP = kP;
-    this->kI = kI;
-    this->kD = kD;
-    this->integralThreshold = integralThreshold;
+// Function to log data to a file
+void logData(FILE* logFile, double time, double error, double kP, double kI, double kD) {
+    // Define a buffer to hold the formatted string
+    char buffer[256];
+    
+    // Format the string using snprintf
+    int len = snprintf(buffer, sizeof(buffer), "%.2f,%.2f,%.2f,%.2f,%.2f\n",
+                       time, error, error * kP, error * kI, error * kD);
+
+    // Check if snprintf succeeded
+    if (len < 0 || len >= sizeof(buffer)) {
+        // Handle the error appropriately
+        fprintf(stderr, "Error formatting the log string.\n");
+        return;
+    }
+    
+    // Write the formatted string to the log file
+    fputs(buffer, logFile);
 }
 
-int PID::calculatePower(double speed, int time, FILE* logFile, bool logData) {
+PID::PID(double kP, double kI, double kD, int integralThreshold)
+    : kP(kP), kI(kI), kD(kD), integralThreshold(integralThreshold) {}
+
+int PID::calculatePower(double speed) {
     getError();
     // Logging Data
     
     derivative = error - prevError;
     integral += error;
     prevError = error;
-
-    if (pros::usd::is_installed()) {
-        fputs((std::to_string(time) + "," + std::to_string(error) + "," + std::to_string(error * kP) + "," + std::to_string(error * kI) + ","  + std::to_string(error * kD) +  "\n").c_str(), logFile);
-    }
 
     if (fabs(error) < integralThreshold) {
         integral += error;
@@ -62,11 +73,15 @@ int PID::calculatePower(double speed, int time, FILE* logFile, bool logData) {
 
 void PID::powerMotors(int turning) {
     int time = 0;
-    FILE* usd_file_write = fopen("/usd/example.txt", "w");
+    FILE* usdFile = fopen("/usd/example.txt", "w");
 
 
     while (true) {
-        power = calculatePower(1, time, usd_file_write, false);
+        power = calculatePower(1);
+
+        if (pros::usd::is_installed()) {
+            logData(usdFile, time / 1000.0, error, kP, kI, kD);
+        }
 
         if (fabs(error) < 1 || time > timeOut) {
             break;
@@ -82,7 +97,7 @@ void PID::powerMotors(int turning) {
     leftDriveTrain.move_voltage(0);
     rightDriveTrain.move_voltage(0);
 
-    fclose(usd_file_write);
+    fclose(usdFile);
 
     pros::delay(250);
 }
@@ -98,6 +113,9 @@ void PID::powerMotors(int turning) {
 //     bottomRight.tare_position();
 //     powerMotors(1);
 // }
+
+Drive::Drive(double kP, double kI, double kD, int integralThreshold)
+    : PID(kP, kI, kD, integralThreshold) {}
 
 void Drive::driveTo(double target, int timeOut, double speed) {
     this->target = target;
@@ -123,6 +141,9 @@ void Drive::getError() {
     this->error = target - rightDriveTrain.get_position(MOTOR_INDEX) * distancePerDegree;
 }
 
+Turn::Turn(double kP, double kI, double kD, int integralThreshold)
+    : PID(kP, kI, kD, integralThreshold) {}
+
 void Turn::setTarget(Coordinate target) {
     this->target = atan2(target.y - globalY, target.x - globalX);
     pros::lcd::print(6, "target: %f", target);
@@ -137,7 +158,7 @@ void Turn::turnTo(Coordinate target, int timeOut) {
 }
 
 void Turn::turnTo(double target, int timeOut) {
-    this->target = target;
+    this->target = normalizeAngle(target);
     this->timeOut = timeOut;
 
     getError();

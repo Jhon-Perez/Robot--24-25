@@ -1,6 +1,6 @@
 import os
 
-def remove_files(directory):
+def remove_files(directory: str):
     """Remove all files in the specified directory."""
     files = os.listdir(directory)
     for file in files:
@@ -14,7 +14,7 @@ def main():
     cwd = os.getcwd()
     data_dir = os.path.join(cwd, "data")
 
-    # Define the directories to clean
+    # Directories to clean, if you need another model, add it here
     pid_dirs = {
         "angular": os.path.join(data_dir, "angular"),
         "linear": os.path.join(data_dir, "linear")

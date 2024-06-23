@@ -16,6 +16,6 @@ enum PolynomialDegree {
     SEXTIC = 6
 };
 
-void setVoltageMotors(int leftMotor, int rightMotor);
 void drive();
 void incrementJoystick();
+void decrementJoystick();
