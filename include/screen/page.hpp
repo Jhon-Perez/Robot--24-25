@@ -1,5 +1,6 @@
 #pragma once
 #include "button.hpp"
+#include "pros/screen.h"
 
 enum PageType {
     Menu,
@@ -14,13 +15,15 @@ enum PageType {
 // Page type, buttons, background, design
 class Page {
 public:
-    Page(std::vector<Button> buttons, function background = []() {}, function design = []() {});
+    Page(std::vector<Button> buttons, std::function<void()> background = []() {});
 
     void draw();
     void interact(pros::screen_touch_status_s_t* status);
 
 private:
     std::vector<Button> buttons;
-    const function background;
-    const function design;
+    const std::function<void()> background;
 };
+
+PageType getCurrentPage();
+void switchPage(PageType page);

@@ -1,10 +1,11 @@
 #include "autonomous.hpp"
 #include "globals.hpp"
-#include "pid.hpp"
+#include "pros/screen.hpp"
+#include "cyclic_iterator.hpp"
 
-CyclicIterator page = CyclicIterator(0, 4);
+CyclicIterator page(4, false);
 
-void select() {
+void displayAWP() {
     pros::screen::print(pros::E_TEXT_MEDIUM, 171, 78, "page: %d", *page);
 
     switch (*page) {
@@ -21,6 +22,14 @@ void select() {
             pros::screen::print(pros::E_TEXT_MEDIUM, 172, 130, "Back");
             break;
     }
+}
+
+void pageUp() {
+    ++page;
+}
+
+void pageDown() {
+    --page;
 }
 
 void runAutonomous() {
@@ -42,15 +51,8 @@ void runAutonomous() {
 	}
 }
 
-void pageUp() {
-    ++page;
-    select();
-}
-
-void pageDown() {
-    --page;
-    select();
-}
+LinearPID drive(0, 0, 0, 0);
+AngularPID turn(0, 0, 0, 0);
 
 void leftAWP() {
 
@@ -62,4 +64,17 @@ void rightAWP() {
 
 void skills() {
 
+}
+
+bool isLinear = false;
+
+PID* getPID() {
+    isLinear = !isLinear;
+    if (isLinear) {
+        pros::screen::print(pros::E_TEXT_MEDIUM, 171, 30, "Linear");
+        return &drive;
+    } else {
+        pros::screen::print(pros::E_TEXT_MEDIUM, 171, 30, "Angular");
+        return &turn;
+    }
 }

@@ -1,7 +1,10 @@
 #pragma once
-#include "main.h"
+#include "text.hpp"
 
-using function = void(*)();
+#include <functional>
+
+#include "pros/colors.hpp"
+#include "pros/screen.hpp"
 
 // const int SCREEN_WIDTH = 480;
 // const int SCREEN_HEIGHT = 240;
@@ -10,19 +13,38 @@ class Button {
 public:
     static inline bool held;
 
-    Button(int x0, int y0, int x1, int y1, pros::Color color, const char* text, function callback, bool refresh = true);
+    template <typename Func, typename... Args>
+    Button(
+        uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, 
+        std::string text, 
+        bool refresh, 
+        Func callback, 
+        Args... args
+    ) : x0(x0), y0(y0), x1(x1), y1(y1), 
+        text(Text(x0, y0, x1, y1, text)), 
+        refresh(refresh), 
+        callback(std::bind(callback, args...)) 
+    {}
+    
+    template <typename Func, typename... Args>
+    Button(
+        uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, 
+        std::string text, 
+        Func callback, 
+        Args... args
+    ) : Button(x0, y0, x1, y1, text, true, callback, args...) {}
 
     void draw();
     void press(pros::screen_touch_status_s_t* status);
+    void editText(std::string text);
    
 private:
-    const int x0;
-    const int y0;
-    const int x1;
-    const int y1;
-    const pros::Color color;
-    const char* text;
-    const function callback;
+    const uint16_t x0;
+    const uint16_t y0;
+    const uint16_t x1;
+    const uint16_t y1;
+    const std::function<void()> callback;
+    Text text;
     const bool refresh;
     bool is_pressed(pros::screen_touch_status_s_t* status) const;
     bool was_pressed;

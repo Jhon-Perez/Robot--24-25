@@ -1,4 +1,5 @@
 #pragma once
+#include <cstdint>
 
 /**
  * A class that represents a cyclic iterator.
@@ -13,8 +14,17 @@ public:
      * 
      * @param start The starting value of the iterator.
      * @param max The maximum value of the iterator range.
+     * @param inclusive Whether the maximum value is inclusive or exclusive.
      */
-    CyclicIterator(int start, int max) : value(start), max(max) {}
+    CyclicIterator(uint8_t start, uint8_t max, bool inclusive) : value(start), max(max + inclusive) {}
+
+    /**
+     * Constructs a CyclicIterator object with a default starting value of 0.
+     * 
+     * @param max The maximum value of the iterator range.
+     * @param inclusive Whether the maximum value is inclusive or exclusive.
+     */
+    CyclicIterator(uint8_t max, bool inclusive) : CyclicIterator(0U, max, inclusive) {}
 
     /**
      * Advances the iterator to the next value.
@@ -35,9 +45,9 @@ public:
      * 
      * @return The current value of the iterator.
      */
-    int operator*() const;
+    uint8_t operator*() const;
 
 private:
-    int value; /**< The current value of the iterator. */
-    int max; /**< The maximum value of the iterator range. */    
+    uint8_t value; /**< The current value of the iterator. */
+    uint8_t max; /**< The maximum value of the iterator range. */    
 };

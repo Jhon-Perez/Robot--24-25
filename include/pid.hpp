@@ -1,59 +1,62 @@
 #pragma once
+#include <utility>
+#include <string>
+#include <cstdint>
 
 struct Coordinate {
     double x;
     double y;
 };
 
+enum Constant {
+    Proportional,
+    Integration,
+    Derivative,
+    IntegralThreshold
+};
+
 class PID {
 public:
-    int calculatePower(double speed);
+    void adjustConstant(uint8_t constant, int16_t value);
+    std::pair<int32_t, std::string> getConstant(uint8_t constant) const;
 
 protected:
-    double kP;
-    double kI;
-    double kD;
-    double error;
-    int power;
-    int timeOut;
+    PID(int32_t kP, int32_t kI, int32_t kD, int32_t integralThreshold);
+    virtual double getError() const = 0;
+    void run(int8_t turning);
 
-    PID(double kP, double kI, double kD, int integralThreshold);
-    // int calculatePower(double speed);
-    virtual void getError() = 0;
-    void powerMotors(int turning);
+    uint16_t timeOut;
 
 private:
-    double prevError;
-    double integral;
-    double derivative;
-
-    int integralThreshold;
-    int time;
+    int32_t kP;
+    int32_t kI;
+    int32_t kD;
+    int32_t integralThreshold;
 };
 
-class Turn : public PID {
+class LinearPID : public PID {
 public:
-    Turn(double kP, double kI, double kD, int integralThreshold);
-    void setTarget(Coordinate target);
-    void turnTo(Coordinate target, int timeOut = 5000);
-    void turnTo(double target, int timeOut = 5000);
-
-private:
-    double target;
-    void getError() override;
-};
-
-class Drive : public PID {
-public:
-    Drive(double kP, double kI, double kD, int integralThreshold);
+    LinearPID(int32_t kP, int32_t kI, int32_t kD, int32_t integralThreshold);
     // void driveTo(Coordinate target, Turn* angular = nullptr, double curvature = 1);
     // void driveTo(Coordinate target, int timeOut = 5000, double speed = 1);
-    void driveTo(double target, int timeOut = 5000, double speed = 1);
+    void driveTo(double target, uint16_t timeOut = 5000, double speed = 1);
 
 private:
     Coordinate targetCoords;
     double target;
     double speed;
-    void getError() override;
+    double getError() const override;
     void setDistance();
+};
+
+class AngularPID : public PID {
+public:
+    AngularPID(int32_t kP, int32_t kI, int32_t kD, int32_t integralThreshold);
+    void setTarget(Coordinate target);
+    void turnTo(Coordinate target, uint16_t timeOut = 5000);
+    void turnTo(double target, uint16_t timeOut = 5000);
+
+private:
+    double target;
+    double getError() const override;
 };

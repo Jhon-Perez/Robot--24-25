@@ -10,7 +10,10 @@
  * All other competition modes are blocked by initialize; it is recommended
  * to keep execution time for this mode under a few seconds.
  */
-void initialize() {}
+void initialize() {
+	setBrakeMode(pros::MotorBrake::brake);
+	displayScreen();
+}
 
 /**
  * Runs while the robot is in the disabled state of Field Management System or
@@ -28,7 +31,13 @@ void disabled() {}
  * This task will exit when the robot is enabled and autonomous or opcontrol
  * starts.
  */
-void competition_initialize() {}
+void competition_initialize() {
+	while (true) {
+		interactScreen();
+
+		pros::delay(20);
+	}
+}
 
 /**
  * Runs the user autonomous code. This function will be started in its own task
@@ -59,10 +68,6 @@ void autonomous() {
  * task, not resume it from where it left off.
  */
 void opcontrol() {
-	pros::screen_touch_status_s_t status;
-	pros::screen::set_eraser(pros::Color::black);
-
-	displayScreen();
 	while (true) {
 		// drive();
 		// intake();

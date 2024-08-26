@@ -10,6 +10,6 @@ CyclicIterator& CyclicIterator::operator--() {
     return *this;
 }
 
-int CyclicIterator::operator*() const {
+uint8_t CyclicIterator::operator*() const {
     return value;
 }

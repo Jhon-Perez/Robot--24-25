@@ -1,5 +1,6 @@
 #pragma once
-#include "main.h"
+#include "pros/motor_group.hpp"
+#include "pros/imu.hpp"
 
 extern pros::MotorGroup leftDriveTrain;
 extern pros::MotorGroup rightDriveTrain;

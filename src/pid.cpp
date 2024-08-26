@@ -1,91 +1,62 @@
-#include "main.h"
+#include <cmath>
+#include <fstream>
+
 #include "pid.hpp"
 #include "globals.hpp"
+#include "utils.hpp"
 
 #define MOTOR_INDEX 1
+#define true 0
+#define false 1
 
-const int diameter = 4;
-const double gearRatio = 1.75;
-const double distancePerDegree = diameter * M_PI / gearRatio / 360;
+// 36:1 1800
+// 18:1 900
+// 6:1 300
+const uint16_t ticksPerRevolution = 
+    rightDriveTrain.get_gearing() == pros::MotorGears::ratio_36_to_1 ? 1800 :
+    rightDriveTrain.get_gearing() == pros::MotorGears::ratio_18_to_1 ? 900 : 300;
 
-// Set the minimum value the motor can be set to
-int clamp(int val, int min, int max) {
-    if (val < min) {
-        val = min;
-    } 
-    if (val > max) {
-        val = max;
-    }
-    return val;
-}
+// 2 * radius * PI / gear ratio / ticks per revolution
+const double distancePerTick = 2 * 2 * M_PI / 1.75 / ticksPerRevolution;
 
-// Normalize the angle to the range [-180, 180]
-double normalizeAngle(double angle) {
-    if (angle > 180) {
-        angle -= 360;
-    } else if (angle < -180) {
-        angle += 360;
-    }
-    return angle;
-}
-
-// Function to log data to a file
-void logData(FILE* logFile, double time, double error, double kP, double kI, double kD) {
-    // Define a buffer to hold the formatted string
-    char buffer[256];
-    
-    // Format the string using snprintf
-    int len = snprintf(buffer, sizeof(buffer), "%.2f,%.2f,%.2f,%.2f,%.2f\n",
-                       time, error, error * kP, error * kI, error * kD);
-
-    // Check if snprintf succeeded
-    if (len < 0 || len >= sizeof(buffer)) {
-        // Handle the error appropriately
-        fprintf(stderr, "Error formatting the log string.\n");
-        return;
-    }
-    
-    // Write the formatted string to the log file
-    fputs(buffer, logFile);
-}
-
-PID::PID(double kP, double kI, double kD, int integralThreshold)
+PID::PID(int32_t kP, int32_t kI, int32_t kD, int32_t integralThreshold)
     : kP(kP), kI(kI), kD(kD), integralThreshold(integralThreshold) {}
 
-int PID::calculatePower(double speed) {
-    getError();
-    // Logging Data
-    
-    derivative = error - prevError;
-    integral += error;
-    prevError = error;
+void PID::run(int8_t turning) {
+    double error = 0;
+    double prevError = 0;
+    double integral = 0;
+    double derivative = 0;
 
-    if (fabs(error) < integralThreshold) {
-        integral += error;
-    } else {
-        integral = 0;
-    }
+    int32_t power = 0;
+    uint16_t time = 0;
 
-    power = error * kP + integral * kI + derivative * kD;
-    
-    return clamp(power * speed, -12000, 12000);
-}
-
-void PID::powerMotors(int turning) {
-    int time = 0;
-    FILE* usdFile = fopen("/usd/example.txt", "w");
-
+    std::ofstream usdFile("/usd/example.csv");
 
     while (true) {
-        power = calculatePower(1);
+        error = getError();
+        derivative = error - prevError;
+        prevError = error;
+
+        if (fabs(error) < integralThreshold) {
+            integral += error;
+        } else {
+            integral = 0;
+        }
 
         if (pros::usd::is_installed()) {
-            logData(usdFile, time / 1000.0, error, kP, kI, kD);
+            usdFile << time << ','
+                    << error << ','
+                    << kP << ','
+                    << kI << ','
+                    << kD << '\n';
         }
 
         if (fabs(error) < 1 || time > timeOut) {
             break;
         }
+
+        power = error * kP + integral * kI + derivative * kD;
 
         leftDriveTrain.move_voltage(power);
         rightDriveTrain.move_voltage(power * turning);
@@ -97,9 +68,46 @@ void PID::powerMotors(int turning) {
     leftDriveTrain.move_voltage(0);
     rightDriveTrain.move_voltage(0);
 
-    fclose(usdFile);
+    usdFile.close();
 
     pros::delay(250);
+}
+
+// Add clamping later
+void PID::adjustConstant(uint8_t constant, int16_t value) {
+    switch (constant) {
+        case Constant::Proportional:
+            kP += value;
+            break;
+
+        case Constant::Integration:
+            kI += value;
+            break;
+
+        case Constant::Derivative:
+            kD += value;
+            break;
+
+        case Constant::IntegralThreshold:
+            integralThreshold += value;
+            break;
+    }
+}
+
+std::pair<int32_t, std::string> PID::getConstant(uint8_t constant) const {
+    switch (constant) {
+        case Constant::Proportional:
+            return {kP, "kP"};
+
+        case Constant::Integration:
+            return {kI, "kI"};
+
+        case Constant::Derivative:
+            return {kD, "kD"};
+
+        default:
+            return {integralThreshold, "iT"};
+    }
 }
 
 // void Drive::driveTo(Coordinate target, int timeOut, double speed) {
@@ -114,67 +122,55 @@ void PID::powerMotors(int turning) {
 //     powerMotors(1);
 // }
 
-Drive::Drive(double kP, double kI, double kD, int integralThreshold)
+LinearPID::LinearPID(int32_t kP, int32_t kI, int32_t kD, int32_t integralThreshold)
     : PID(kP, kI, kD, integralThreshold) {}
 
-void Drive::driveTo(double target, int timeOut, double speed) {
+void LinearPID::driveTo(double target, uint16_t timeOut, double speed) {
     this->target = target;
     this->timeOut = timeOut;
     this->speed = speed;
 
     rightDriveTrain.tare_position(MOTOR_INDEX);
-    powerMotors(1);
+    run(1);
 }
 
 // Placeholders so I can compile the code
 int globalX;
 int globalY;
 
-void Drive::setDistance() {
+void LinearPID::setDistance() {
     this->target = sqrt(pow(targetCoords.x - globalX, 2) + pow(targetCoords.y - globalY, 2));
     
     rightDriveTrain.tare_position(MOTOR_INDEX);
-    powerMotors(1);
+    run(1);
 }
 
-void Drive::getError() {
-    this->error = target - rightDriveTrain.get_position(MOTOR_INDEX) * distancePerDegree;
+double LinearPID::getError() const {
+    return target - rightDriveTrain.get_position(MOTOR_INDEX) * distancePerTick;
 }
 
-Turn::Turn(double kP, double kI, double kD, int integralThreshold)
+AngularPID::AngularPID(int32_t kP, int32_t kI, int32_t kD, int32_t integralThreshold)
     : PID(kP, kI, kD, integralThreshold) {}
 
-void Turn::setTarget(Coordinate target) {
+void AngularPID::setTarget(Coordinate target) {
     this->target = atan2(target.y - globalY, target.x - globalX);
-    pros::lcd::print(6, "target: %f", target);
     // this->target = normalizeAngle(angle - imuSensor.get_yaw());
 }
 
-void Turn::turnTo(Coordinate target, int timeOut) {
+void AngularPID::turnTo(Coordinate target, uint16_t timeOut) {
     setTarget(target);
     this->timeOut = timeOut;
 
-    powerMotors(-1);
+    run(-1);
 }
 
-void Turn::turnTo(double target, int timeOut) {
+void AngularPID::turnTo(double target, uint16_t timeOut) {
     this->target = normalizeAngle(target);
     this->timeOut = timeOut;
 
-    getError();
-    if (fabs(error) > 10) {
-        this->kP = 0.55 * 1000;
-        this->kI = 0 * 1000;
-        this->kD = 5.5 * 1000;
-    } else {
-      this->kP = 0.55 * 1000;
-      this->kI = 0.05 * 1000;
-      this->kD = 5.5 * 1000;  
-    }
-
-    powerMotors(-1);
+    run(-1);
 }
 
-void Turn::getError() {
-    this->error = normalizeAngle(target - imuSensor.get_yaw());
+double AngularPID::getError() const {
+    return normalizeAngle(target - imuSensor.get_yaw());
 }

@@ -1,7 +1,7 @@
 #pragma once
-#include "cyclic_iterator.hpp"
+#include "pid.hpp"
 
-void select();
+void displayAWP();
 void runAutonomous();
 void pageUp();
 void pageDown();
@@ -9,3 +9,5 @@ void pageDown();
 void leftAWP();
 void rightAWP();
 void skills();
+
+PID* getPID();
