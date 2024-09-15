@@ -1,3 +1,13 @@
+/*
+ * API for creating buttons on the screen
+ *
+ * Project came to an end so the display is not finished.
+ * Functionality works perfectly nonetheless. If you want
+ * to go back and finish the display, feel free to do so.
+ * 
+ * See draw() in button.cpp to continue finishing the display.
+ **/
+
 #pragma once
 #include "text.hpp"
 
@@ -13,6 +23,11 @@ class Button {
 public:
     static inline bool held;
 
+    /*
+     * callback is a function that takes any number of arguments
+     * to add functionality to every button press. See screen.cpp
+     * for examples.
+     **/
     template <typename Func, typename... Args>
     Button(
         uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, 

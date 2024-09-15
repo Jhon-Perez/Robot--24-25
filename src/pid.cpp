@@ -6,8 +6,6 @@
 #include "utils.hpp"
 
 #define MOTOR_INDEX 1
-#define true 0
-#define false 1
 
 // 36:1 1800
 // 18:1 900
@@ -16,9 +14,9 @@ const uint16_t ticksPerRevolution =
     rightDriveTrain.get_gearing() == pros::MotorGears::ratio_36_to_1 ? 1800 :
     rightDriveTrain.get_gearing() == pros::MotorGears::ratio_18_to_1 ? 900 : 300;
 
+// Change ticks per revolution to 360 if encoder units are degrees
 // 2 * radius * PI / gear ratio / ticks per revolution
 const double distancePerTick = 2 * 2 * M_PI / 1.75 / ticksPerRevolution;
-
 PID::PID(int32_t kP, int32_t kI, int32_t kD, int32_t integralThreshold)
     : kP(kP), kI(kI), kD(kD), integralThreshold(integralThreshold) {}
 
@@ -73,7 +71,8 @@ void PID::run(int8_t turning) {
     pros::delay(250);
 }
 
-// Add clamping later
+// Wanted to experiment with custom PID tuning and displaying all the values easily.
+// Don't think this was the best implementation, feel free to find another solution.
 void PID::adjustConstant(uint8_t constant, int16_t value) {
     switch (constant) {
         case Constant::Proportional:
@@ -94,6 +93,8 @@ void PID::adjustConstant(uint8_t constant, int16_t value) {
     }
 }
 
+// Wanted to experiment with custom PID tuning and displaying all the values easily.
+// Don't think this was the best implementation, feel free to find another solution.
 std::pair<int32_t, std::string> PID::getConstant(uint8_t constant) const {
     switch (constant) {
         case Constant::Proportional:
@@ -134,7 +135,8 @@ void LinearPID::driveTo(double target, uint16_t timeOut, double speed) {
     run(1);
 }
 
-// Placeholders so I can compile the code
+// Placeholders so I can compile the code. 
+// Anything with globalX, globalY or Coordinate was from last year when I was using Odometry.
 int globalX;
 int globalY;
 

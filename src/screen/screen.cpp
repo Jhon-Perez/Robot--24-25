@@ -1,3 +1,13 @@
+/*
+ * screen.cpp is full of examples of how to use the API and how
+ * I utilized it to create a screen for the robot with features
+ * such as an autonomous selector, driver control settings for
+ * switching to different control schemes, and PID tuning to
+ * quickly tune PID without having to wait long amounts of time
+ * when recompiling project.
+ */
+
+#include "main.h"
 #include "screen.hpp"
 #include "page.hpp"
 #include "button.hpp"
@@ -18,7 +28,6 @@ void tuningBackground() {
 }
 
 Page pages[] = {
-    // Menu
     Page({
         Button(14,57,127,121, "Auton Selection", switchPage, PageType::Autonomous),
         Button(162,58,283,120, "Driver Control", switchPage, PageType::DriverControl),
@@ -30,7 +39,7 @@ Page pages[] = {
     Page({
         Button(50,56,117,120, "Next", pageUp),
         Button(51,136,115,195, "Back", pageDown),
-        Button(316,87,424,177, "Test", false, runAutonomous),
+        Button(316,87,424,177, "Test", false, autonomous),
     }, displayAWP),
     // Driver Control
     Page({
@@ -46,7 +55,7 @@ Page pages[] = {
     }),
     // Motors
     Page({
-        // It's going to be a pain to draw a good looking motor
+
     }),
     // Tuning PID
     Page({

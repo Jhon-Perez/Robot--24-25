@@ -51,7 +51,22 @@ void competition_initialize() {
  * from where it left off.
  */
 void autonomous() {
-	runAutonomous();
+	switch (getPage()) {
+		case 0:
+			leftAWP();
+			break;
+
+		case 1:
+			rightAWP();
+			break;
+
+		case 2:
+			skills();
+			break;
+
+		default:
+			break;
+	}
 }
 
 /**

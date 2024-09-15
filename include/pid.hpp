@@ -1,5 +1,4 @@
 #pragma once
-#include <utility>
 #include <string>
 #include <cstdint>
 
@@ -52,6 +51,7 @@ private:
 class AngularPID : public PID {
 public:
     AngularPID(int32_t kP, int32_t kI, int32_t kD, int32_t integralThreshold);
+    // Anything with globalX, globalY or Coordinate was from last year when I was using Odometry.
     void setTarget(Coordinate target);
     void turnTo(Coordinate target, uint16_t timeOut = 5000);
     void turnTo(double target, uint16_t timeOut = 5000);

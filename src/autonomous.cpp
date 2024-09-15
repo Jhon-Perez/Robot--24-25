@@ -32,23 +32,8 @@ void pageDown() {
     --page;
 }
 
-void runAutonomous() {
-    switch (*page) {
-		case 0:
-			leftAWP();
-			break;
-
-		case 1:
-			rightAWP();
-			break;
-
-		case 2:
-			skills();
-			break;
-
-		default:
-			break;
-	}
+uint8_t getPage() {
+    return *page;
 }
 
 LinearPID drive(0, 0, 0, 0);

@@ -18,12 +18,9 @@ enum PolynomialDegree {
     SEXTIC = 6
 };
 
-// lazy way, too tired rn
 extern CyclicIterator joystickIterator;
 extern CyclicIterator polynomialIterator;
 
 void drive();
 void setBrakeMode(pros::MotorBrake mode);
 void switchBrakeMode();
-void incrementJoystick();
-void decrementJoystick();
